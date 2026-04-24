@@ -3,10 +3,207 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>File Upload Demo</title>
+  <title>Testing Playground</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      line-height: 1.4;
+    }
+
+    main {
+      display: grid;
+      gap: 2rem;
+      max-width: 50rem;
+    }
+
+    section {
+      border: 1px solid #d0d7de;
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+
+    form {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    label {
+      display: grid;
+      gap: 0.25rem;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    button {
+      font: inherit;
+      padding: 0.6rem;
+    }
+
+    button {
+      width: fit-content;
+      cursor: pointer;
+    }
+
+    .status {
+      min-height: 1.5rem;
+      font-weight: 600;
+    }
+
+    .error {
+      color: #b42318;
+    }
+
+    .success {
+      color: #027a48;
+    }
+
+    ul {
+      padding-left: 1.25rem;
+    }
+  </style>
 </head>
 <body>
-  <h1>File Upload Demo</h1>
-  <input type="file" id="fileInput" />
+  <main>
+    <h1>Testing Playground</h1>
+
+    <section aria-labelledby="contact-heading">
+      <h2 id="contact-heading">Contact form</h2>
+      <form id="contactForm" novalidate>
+        <label for="nameInput">
+          Name
+          <input id="nameInput" name="name" type="text" />
+        </label>
+
+        <label for="emailInput">
+          Email
+          <input id="emailInput" name="email" type="email" />
+        </label>
+
+        <label for="messageInput">
+          Message
+          <textarea id="messageInput" name="message" rows="4"></textarea>
+        </label>
+
+        <button type="submit">Send message</button>
+      </form>
+      <p id="formStatus" class="status" role="alert" aria-live="polite"></p>
+      <dl id="submissionSummary" hidden>
+        <dt>Submitted name</dt>
+        <dd data-summary="name"></dd>
+        <dt>Submitted email</dt>
+        <dd data-summary="email"></dd>
+        <dt>Submitted message</dt>
+        <dd data-summary="message"></dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="upload-heading">
+      <h2 id="upload-heading">File upload</h2>
+      <label for="fileInput">
+        Choose a file
+        <input type="file" id="fileInput" />
+      </label>
+      <p id="uploadStatus" class="status" aria-live="polite">No file selected</p>
+    </section>
+
+    <section aria-labelledby="board-heading">
+      <h2 id="board-heading">Message board</h2>
+      <form id="messageBoardForm" novalidate>
+        <label for="messageBoardInput">
+          Add a message
+          <input id="messageBoardInput" name="message" type="text" maxlength="140" />
+        </label>
+        <button type="submit">Post message</button>
+      </form>
+      <p id="messageStatus" class="status" role="alert" aria-live="polite"></p>
+      <ul id="messageList" aria-label="Posted messages"></ul>
+    </section>
+  </main>
+
+  <script>
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+    const submissionSummary = document.getElementById('submissionSummary');
+
+    contactForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(contactForm);
+      const name = formData.get('name').trim();
+      const email = formData.get('email').trim();
+      const message = formData.get('message').trim();
+
+      if (!name || !email || !message) {
+        formStatus.textContent = 'Please complete every field before submitting.';
+        formStatus.className = 'status error';
+        submissionSummary.hidden = true;
+        return;
+      }
+
+      const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!emailIsValid) {
+        formStatus.textContent = 'Enter a valid email address.';
+        formStatus.className = 'status error';
+        submissionSummary.hidden = true;
+        return;
+      }
+
+      if (message.length < 10) {
+        formStatus.textContent = 'Message must be at least 10 characters long.';
+        formStatus.className = 'status error';
+        submissionSummary.hidden = true;
+        return;
+      }
+
+      formStatus.textContent = 'Message sent successfully.';
+      formStatus.className = 'status success';
+      submissionSummary.hidden = false;
+      document.querySelector('[data-summary="name"]').textContent = name;
+      document.querySelector('[data-summary="email"]').textContent = email;
+      document.querySelector('[data-summary="message"]').textContent = message;
+    });
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    fileInput.addEventListener('change', () => {
+      if (!fileInput.files || fileInput.files.length === 0) {
+        uploadStatus.textContent = 'No file selected';
+        uploadStatus.className = 'status';
+        return;
+      }
+
+      const [file] = fileInput.files;
+      uploadStatus.textContent = `Selected ${file.name} (${file.size} bytes)`;
+      uploadStatus.className = 'status success';
+    });
+
+    const messageBoardForm = document.getElementById('messageBoardForm');
+    const messageStatus = document.getElementById('messageStatus');
+    const messageList = document.getElementById('messageList');
+
+    messageBoardForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const input = document.getElementById('messageBoardInput');
+      const value = input.value.trim();
+
+      if (!value) {
+        messageStatus.textContent = 'Message cannot be empty.';
+        messageStatus.className = 'status error';
+        return;
+      }
+
+      const item = document.createElement('li');
+      item.textContent = value;
+      messageList.appendChild(item);
+
+      messageStatus.textContent = 'Message posted.';
+      messageStatus.className = 'status success';
+      input.value = '';
+    });
+  </script>
 </body>
 </html>
